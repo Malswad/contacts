@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact List</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f9;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            padding: 30px 35px 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .subtitle {
+            color: #7a7f93;
+            font-size: 14px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 16px;
+        }
+
+        .btn-add {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #2d3b8f;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-add:hover {
+            background: #1f2b6e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 59, 143, 0.3);
+        }
+
+        /* ---- Filter ---- */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 28px;
+            background: #f8faff;
+            padding: 12px 18px;
+            border-radius: 12px;
+            border: 1px solid #e8ecf4;
+            align-items: center;
+        }
+
+        .filter-bar .label {
+            font-weight: 500;
+            color: #4a4f62;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .filter-btn {
+            text-decoration: none;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            background: white;
+            color: #4a4f62;
+            border: 1px solid #dde1ea;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: #edf2ff;
+            border-color: #a0b4e8;
+        }
+
+        .filter-btn.active {
+            background: #2d3b8f;
+            color: white;
+            border-color: #2d3b8f;
+        }
+
+        .filter-btn.active:hover {
+            background: #1f2b6e;
+            border-color: #1f2b6e;
+        }
+
+        /* ---- Stats ---- */
+        .stats {
+            font-size: 14px;
+            color: #5a5f77;
+            margin-bottom: 20px;
+        }
+
+        .stats span {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        /* ---- Table ---- */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #eef1f7;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 500px;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px 18px;
+            background: #f8faff;
+            color: #2d324a;
+            font-weight: 600;
+            border-bottom: 2px solid #e4e9f2;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 14px 18px;
+            border-bottom: 1px solid #eef1f7;
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: #fafcff;
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #eef2f9;
+            color: #3f4661;
+            text-transform: capitalize;
+        }
+
+        .type-badge.personal {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .type-badge.organization {
+            background: #fce4ec;
+            color: #b71c1c;
+        }
+
+        .name-cell {
+            font-weight: 500;
+            color: #1a1a2e;
+        }
+
+        .phone-cell {
+            color: #2d3b8f;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .btn-edit {
+            background: #dbeafe;
+            color: #1e40af;
+            border-color: #bfdbfe;
+        }
+
+        .btn-edit:hover {
+            background: #bfdbfe;
+            transform: translateY(-1px);
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+
+        .btn-delete:hover {
+            background: #fecaca;
+            transform: translateY(-1px);
+        }
+
+        .no-contacts {
+            text-align: center;
+            padding: 50px 20px;
+            color: #7a7f93;
+        }
+
+        .no-contacts .icon {
+            font-size: 42px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .no-contacts p {
+            font-size: 16px;
+        }
+
+        /* Messages */
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 640px) {
+            .container {
+                padding: 20px 16px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn-add {
+                justify-content: center;
+            }
+
+            .filter-bar .label {
+                width: 100%;
+                margin-bottom: 6px;
+            }
+
+            .filter-btn {
+                padding: 6px 14px;
+                font-size: 13px;
+            }
+
+            td, th {
+                padding: 12px 14px;
+                font-size: 13px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>📇 Contacts</h1>
+            <div class="subtitle">View and manage your contacts</div>
+        </div>
+        <a href="{% url 'contacts:add_contact' %}" class="btn-add">
+            <span>+</span> Add New Contact
+        </a>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Filter -->
+    <div class="filter-bar">
+        <span class="label">🔍 Filter:</span>
+        {% for key, label in filter_options %}
+            <a href="?type={{ key }}"
+               class="filter-btn {% if key == current_filter %}active{% endif %}">
+                {{ label }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+        Showing <span>{{ contacts|length }}</span> contact{{ contacts|length|pluralize }}
+        {% if current_filter != 'all' %}
+            ({{ current_filter }})
+        {% endif %}
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Phone(s)</th>
+                    <th style="text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contact in contacts %}
+                <tr>
+                    <td>
+                        <span class="type-badge {{ contact.contact_type }}">
+                            {{ contact.get_contact_type_display }}
+                        </span>
+                    </td>
+                    <td class="name-cell">{{ contact.get_name }}</td>
+                    <td class="phone-cell">{{ contact.get_phones }}</td>
+                   <td>
+                        <div class="action-buttons" style="justify-content: center;">
+                            <a href="{% url 'contacts:edit_contact' contact.id %}" class="btn-action btn-edit">
+                                ✏️ Edit
+                            </a>
+                            <form method="post" action="{% url 'contacts:delete_contact' contact.id %}"
+                                  style="display: inline;"
+                                  onsubmit="return confirm('Are you sure you want to delete this contact? This action cannot be undone.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-action btn-delete">
+                                    🗑️ Delete
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">
+                        <div class="no-contacts">
+                            <div class="icon">👤</div>
+                            <p>No contacts found for this filter.</p>
+                            <a href="{% url 'contacts:add_contact' %}" style="display: inline-block; margin-top: 12px; color: #2d3b8f; text-decoration: none; font-weight: 500;">
+                                + Add your first contact
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Delete Confirmation (optional - you can implement a modal or simple confirm) -->
+<script>
+function confirmDelete(contactId) {
+    if (confirm('Are you sure you want to delete this contact? This action cannot be undone.')) {
+        // You'll need to implement a delete view or use a form with POST
+        // For now, we'll show a message
+        alert('Delete functionality needs to be implemented. Contact ID: ' + contactId);
+        // You can redirect to a delete URL or use AJAX
+        // window.location.href = '/contacts/delete/' + contactId + '/';
+    }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if is_edit %}Edit Contact{% else %}Add New Contact{% endif %}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f9;
+            padding: 30px 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            padding: 30px 35px 40px;
+        }
+
+        /* NEW: Header with back button */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin: 0;
+        }
+
+        .subtitle {
+            color: #7a7f93;
+            font-size: 14px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 16px;
+        }
+
+        /* NEW: Back button style */
+        .btn-back {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #4a4f62;
+            background: #eef2f9;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-back:hover {
+            background: #e4e9f2;
+        }
+
+        /* Messages */
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            color: #2d324a;
+            margin-bottom: 6px;
+        }
+
+        .form-group label .required {
+            color: #dc2626;
+            margin-left: 2px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #dde1ea;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2d3b8f;
+            box-shadow: 0 0 0 3px rgba(45, 59, 143, 0.1);
+        }
+
+        .form-group input.error,
+        .form-group select.error {
+            border-color: #dc2626;
+        }
+
+        .form-group .help-text {
+            font-size: 12px;
+            color: #7a7f93;
+            margin-top: 4px;
+        }
+
+        /* Radio Buttons */
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            padding-top: 6px;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 400;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .radio-group input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* Dynamic Fields */
+        .dynamic-fields {
+            background: #f8faff;
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-top: 8px;
+            border: 1px solid #e8ecf4;
+        }
+
+        .field-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: flex-end;
+        }
+
+        .field-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .field-row .form-group:last-child {
+            flex: 0.5;
+        }
+
+        .field-row .remove-btn {
+            background: #fee2e2;
+            border: none;
+            color: #991b1b;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .field-row .remove-btn:hover {
+            background: #fecaca;
+        }
+
+        .add-btn {
+            background: none;
+            border: 1.5px dashed #a0b4e8;
+            color: #2d3b8f;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-btn:hover {
+            background: #edf2ff;
+            border-color: #2d3b8f;
+        }
+
+        /* Submit */
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f2f5;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #2d3b8f;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1f2b6e;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(45, 59, 143, 0.3);
+        }
+
+        .btn-secondary {
+            background: #eef2f9;
+            color: #4a4f62;
+        }
+
+        .btn-secondary:hover {
+            background: #e4e9f2;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .container {
+                padding: 20px 16px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .radio-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .field-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .field-row .form-group:last-child {
+                flex: 1;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- CHANGED: Header with back button for edit mode -->
+    <div class="header">
+        <div>
+            <h1>{% if is_edit %}✏️ Edit Contact{% else %}➕ Add New Contact{% endif %}</h1>
+            <div class="subtitle">
+                {% if is_edit %}
+                    Update existing contact information
+                {% else %}
+                    Create a new contact with multiple phone numbers and emails
+                {% endif %}
+            </div>
+        </div>
+        <!-- NEW: Back button for edit mode -->
+        {% if is_edit %}
+        <a href="{% url 'contacts:contact_list' %}" class="btn-back">
+            ← Back to List
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Messages -->
+   <!-- In add_contact.html, the messages section should be: -->
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Also display field-specific errors next to fields -->
+{% for field in phone_form %}
+    {% if field.errors %}
+    <div class="help-text" style="color: #dc2626;">
+        {% for error in field.errors %}
+            {{ error }}
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endfor %}
+
+    <form method="post" id="contactForm" novalidate>
+        {% csrf_token %}
+
+        <!-- NEW: Hidden field for edit mode -->
+        {% if is_edit %}
+        <input type="hidden" name="contact_id" value="{{ contact_id }}">
+        {% endif %}
+
+        <!-- Contact Type -->
+    <div class="form-group">
+    <label>Contact Type <span class="required">*</span></label>
+    <div class="radio-group" id="contactTypeRadios">
+        {% if is_edit %}
+            <!-- EDIT MODE: Show as disabled/read-only -->
+            <div style="display: flex; gap: 20px; padding-top: 6px;">
+                <div style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: #f0f2f5; border-radius: 6px;">
+                    <input type="radio" name="contact_type" value="{{ initial_type }}"
+                           checked disabled style="opacity: 0.6;">
+                    <span style="font-weight: 500;">
+                        {% if initial_type == 'personal' %}👤 Personal{% else %}🏢 Organization{% endif %}
+                    </span>
+                </div>
+                <!-- Hidden input to preserve the value -->
+                <input type="hidden" name="contact_type" value="{{ initial_type }}">
+            </div>
+        {% else %}
+            <!-- ADD MODE: Normal radio buttons -->
+            <label>
+                <input type="radio" name="contact_type" value="personal"
+                       {% if initial_type == 'personal' or not contact_form.contact_type.value %}checked{% endif %}
+                       onchange="toggleDetails()">
+                👤 Personal
+            </label>
+            <label>
+                <input type="radio" name="contact_type" value="organization"
+                       {% if initial_type == 'organization' or contact_form.contact_type.value == 'organization' %}checked{% endif %}
+                       onchange="toggleDetails()">
+                🏢 Organization
+            </label>
+        {% endif %}
+    </div>
+</div>
+
+        <!-- Personal Details -->
+        <div id="personalDetails" class="details-section">
+            <h3 style="margin-bottom: 16px; font-size: 18px; color: #2d324a;">Personal Information</h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label>First Name <span class="required">*</span></label>
+                    <input type="text" name="first_name" value="{{ details_form.first_name.value|default:'' }}" required>
+                    {% if details_form.first_name.errors %}
+                    <div class="help-text" style="color: #dc2626;">{{ details_form.first_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label>Last Name <span class="required">*</span></label>
+                    <input type="text" name="last_name" value="{{ details_form.last_name.value|default:'' }}" required>
+                    {% if details_form.last_name.errors %}
+                    <div class="help-text" style="color: #dc2626;">{{ details_form.last_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label>Second Name</label>
+                    <input type="text" name="second_name" value="{{ details_form.second_name.value|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label>Middle Name</label>
+                    <input type="text" name="middle_name" value="{{ details_form.middle_name.value|default:'' }}">
+                </div>
+            </div>
+
+            <h4 style="margin: 20px 0 12px; font-size: 15px; color: #4a4f62;">Arabic Names (Optional)</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label>First Name (Arabic)</label>
+                    <input type="text" name="first_name_ar" value="{{ details_form.first_name_ar.value|default:'' }}" dir="rtl">
+                </div>
+                <div class="form-group">
+                    <label>Last Name (Arabic)</label>
+                    <input type="text" name="last_name_ar" value="{{ details_form.last_name_ar.value|default:'' }}" dir="rtl">
+                </div>
+                <div class="form-group">
+                    <label>Second Name (Arabic)</label>
+                    <input type="text" name="second_name_ar" value="{{ details_form.second_name_ar.value|default:'' }}" dir="rtl">
+                </div>
+                <div class="form-group">
+                    <label>Middle Name (Arabic)</label>
+                    <input type="text" name="middle_name_ar" value="{{ details_form.middle_name_ar.value|default:'' }}" dir="rtl">
+                </div>
+            </div>
+        </div>
+
+        <!-- Organization Details -->
+        <div id="organizationDetails" class="details-section" style="display: none;">
+            <h3 style="margin-bottom: 16px; font-size: 18px; color: #2d324a;">Organization Information</h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label>Legal Name <span class="required">*</span></label>
+                    <input type="text" name="legal_name" value="{{ details_form.legal_name.value|default:'' }}" required>
+                    {% if details_form.legal_name.errors %}
+                    <div class="help-text" style="color: #dc2626;">{{ details_form.legal_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label>Trade Name <span class="required">*</span></label>
+                    <input type="text" name="trade_name" value="{{ details_form.trade_name.value|default:'' }}" required>
+                    {% if details_form.trade_name.errors %}
+                    <div class="help-text" style="color: #dc2626;">{{ details_form.trade_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <h4 style="margin: 20px 0 12px; font-size: 15px; color: #4a4f62;">Arabic Names (Optional)</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label>Legal Name (Arabic)</label>
+                    <input type="text" name="legal_name_ar" value="{{ details_form.legal_name_ar.value|default:'' }}" dir="rtl">
+                </div>
+                <div class="form-group">
+                    <label>Trade Name (Arabic)</label>
+                    <input type="text" name="trade_name_ar" value="{{ details_form.trade_name_ar.value|default:'' }}" dir="rtl">
+                </div>
+            </div>
+        </div>
+
+<!-- Phone Numbers Section -->
+<div class="form-group">
+    <label>Phone Numbers <span class="required">*</span></label>
+    <div class="dynamic-fields" id="phoneFields">
+        {% for phone_form in phone_forms %}
+        <div class="field-row phone-row">
+            <div class="form-group">
+                <input type="tel"
+                       name="phone_number"
+                       value="{{ phone_form.phone_number.value|default:'' }}"
+                       placeholder="Phone number"
+                       title="Phone number must be 7-15 digits, can start with +">
+                {% if phone_form.phone_number.errors %}
+                <div class="help-text" style="color: #dc2626; margin-top: 4px;">
+                    {% for error in phone_form.phone_number.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <select name="phone_type">
+                    <option value="work" {% if phone_form.type.value == 'work' %}selected{% endif %}>Work</option>
+                    <option value="personal" {% if phone_form.type.value == 'personal' %}selected{% endif %}>Personal</option>
+                    <option value="other" {% if phone_form.type.value == 'other' or not phone_form.type.value %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            {% if not forloop.first %}
+            <button type="button" class="remove-btn" onclick="removeField(this)">×</button>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <button type="button" class="add-btn" onclick="addPhone()">+ Add Phone Number</button>
+    <div class="help-text">At least one phone number is required</div>
+</div>
+
+<!-- Emails Section -->
+<div class="form-group">
+    <label>Email Addresses</label>
+    <div class="dynamic-fields" id="emailFields">
+        {% for email_form in email_forms %}
+        <div class="field-row email-row">
+            <div class="form-group">
+                <input type="email"
+                       name="email_address"
+                       value="{{ email_form.email_address.value|default:'' }}"
+                       placeholder="Email address"
+                       title="Please enter a valid email address">
+                {% if email_form.email_address.errors %}
+                <div class="help-text" style="color: #dc2626; margin-top: 4px;">
+                    {% for error in email_form.email_address.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <select name="email_type">
+                    <option value="work" {% if email_form.type.value == 'work' %}selected{% endif %}>Work</option>
+                    <option value="personal" {% if email_form.type.value == 'personal' %}selected{% endif %}>Personal</option>
+                    <option value="other" {% if email_form.type.value == 'other' or not email_form.type.value %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            {% if not forloop.first %}
+            <button type="button" class="remove-btn" onclick="removeField(this)">×</button>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <button type="button" class="add-btn" onclick="addEmail()">+ Add Email Address</button>
+</div>
+
+        <!-- CHANGED: Form actions with conditional button text -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {% if is_edit %}💾 Update Contact{% else %}💾 Save Contact{% endif %}
+            </button>
+            <a href="{% url 'contacts:contact_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Toggle between Personal and Organization details
+    function toggleDetails() {
+        const type = document.querySelector('input[name="contact_type"]:checked').value;
+        const personalDiv = document.getElementById('personalDetails');
+        const orgDiv = document.getElementById('organizationDetails');
+
+        if (type === 'personal') {
+            personalDiv.style.display = 'block';
+            orgDiv.style.display = 'none';
+
+            // Make personal fields required
+            document.querySelectorAll('#personalDetails input[type="text"]').forEach(input => {
+                if (input.name === 'first_name' || input.name === 'last_name') {
+                    input.required = true;
+                } else {
+                    input.required = false;
+                }
+            });
+
+            // Make org fields not required
+            document.querySelectorAll('#organizationDetails input[type="text"]').forEach(input => {
+                input.required = false;
+            });
+        } else {
+            personalDiv.style.display = 'none';
+            orgDiv.style.display = 'block';
+
+            // Make org fields required
+            document.querySelectorAll('#organizationDetails input[type="text"]').forEach(input => {
+                if (input.name === 'legal_name' || input.name === 'trade_name') {
+                    input.required = true;
+                } else {
+                    input.required = false;
+                }
+            });
+
+            // Make personal fields not required
+            document.querySelectorAll('#personalDetails input[type="text"]').forEach(input => {
+                input.required = false;
+            });
+        }
+    }
+
+    // Add Phone field
+    function addPhone() {
+    const container = document.getElementById('phoneFields');
+    const row = document.createElement('div');
+    row.className = 'field-row phone-row';
+    row.innerHTML = `
+        <div class="form-group">
+            <input type="tel"
+                   name="phone_number"
+                   placeholder="Phone number"
+                   title="Phone number must be 7-15 digits, can start with +">
+        </div>
+        <div class="form-group">
+            <select name="phone_type">
+                <option value="work">Work</option>
+                <option value="personal">Personal</option>
+                <option value="other" selected>Other</option>
+            </select>
+        </div>
+        <button type="button" class="remove-btn" onclick="removeField(this)">×</button>
+    `;
+    container.appendChild(row);
+}
+
+// Add Email field with validation
+function addEmail() {
+    const container = document.getElementById('emailFields');
+    const row = document.createElement('div');
+    row.className = 'field-row email-row';
+    row.innerHTML = `
+        <div class="form-group">
+            <input type="email"
+                   name="email_address"
+                   placeholder="Email address"
+                   title="Please enter a valid email address">
+        </div>
+        <div class="form-group">
+            <select name="email_type">
+                <option value="work">Work</option>
+                <option value="personal">Personal</option>
+                <option value="other" selected>Other</option>
+            </select>
+        </div>
+        <button type="button" class="remove-btn" onclick="removeField(this)">×</button>
+    `;
+    container.appendChild(row);
+}
+
+    // Remove field
+    function removeField(btn) {
+        const row = btn.parentElement;
+        const container = row.parentElement;
+        if (container.children.length > 1) {
+            row.remove();
+        } else {
+            alert('You must keep at least one field.');
+        }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleDetails();
+    });
+</script>
+
+</body>
+</html>
