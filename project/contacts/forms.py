@@ -1,5 +1,6 @@
 from django import forms
 from django.core.validators import EmailValidator
+import re
 
 from .models import Contact, PersonalDetails, OrganizationDetails, ContactPhone, ContactEmail
 
@@ -78,7 +79,6 @@ class PhoneForm(forms.ModelForm):
             phone = phone.strip()
 
             # Check if it only contains digits, +, -, or spaces
-            import re
             # Remove allowed special characters for validation
             cleaned = re.sub(r'[\s\-\(\)]', '', phone)
 
